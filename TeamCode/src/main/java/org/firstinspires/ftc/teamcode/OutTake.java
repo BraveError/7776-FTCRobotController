@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -9,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class OutTake {
     public static Telemetry telemetry;
 
-    private DcMotor LMotor;
-    private DcMotor RMotor;
+    private DcMotorEx LMotor;
+    private DcMotorEx RMotor;
 
     private Servo LServ;
     private Servo RServ;
@@ -33,7 +35,11 @@ public class OutTake {
     private boolean ReachedTargetRPM = false;
     private double ReachingTargetRPM = 0; // RPM
 
-    public void Init(DcMotor LeftMotor, DcMotor RightMotor, Servo LeftServo, Servo RightServo) {
+    public static final double NEW_P = 180;
+    public static final double NEW_I = 50;
+    public static final double NEW_D = 100;
+
+    public void Init(DcMotorEx LeftMotor, DcMotorEx RightMotor, Servo LeftServo, Servo RightServo) {
         LMotor = LeftMotor;
         RMotor = RightMotor;
 
@@ -46,8 +52,8 @@ public class OutTake {
         LMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        LMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        RMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         LMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -65,6 +71,14 @@ public class OutTake {
 
         double LeftRPM = (LRevs - LastLRevs) / (DeltaTime / 60);
         double RightRPM = (RRevs - LastRRevs) / (DeltaTime / 60);
+
+        PIDCoefficients pidOrig = LMotor.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        PIDCoefficients pidNew = new PIDCoefficients(NEW_P,NEW_I,NEW_D);
+        LMotor.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,pidNew);
+        RMotor.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,pidNew);
+
+
 
         if (this.RunningToRPM) {
             if (LeftRPM > this.WantedRPM || RightRPM > this.WantedRPM) {
@@ -101,27 +115,32 @@ public class OutTake {
         this.RunningToRPM = false;
     }
 
-    public void RunToRPM(double RPM) {
-        this.WantedRPM = RPM;
-        if (!this.RunningToRPM) {
-            this.LPower = RPM;
-            this.RPower = RPM;
-        }
-        if (RPM != this.ReachingTargetRPM) {
-            this.ReachedTargetRPM = false;
-        }
-        this.ReachingTargetRPM = RPM;
-        this.RunningToRPM = true;
+    public void SetVelocity(double Velocity) {
+        LMotor.setVelocity(Velocity);
+        RMotor.setVelocity(Velocity);
     }
 
-    public void StopRunToRPM() {
-        if (this.RunningToRPM) {
-            LMotor.setPower(0);
-            RMotor.setPower(0);
-        }
-        this.ReachingTargetRPM = 0;
-        this.RunningToRPM = false;
-    }
+//    public void RunToRPM(double RPM) {
+//        this.WantedRPM = RPM;
+//        if (!this.RunningToRPM) {
+//            this.LPower = RPM;
+//            this.RPower = RPM;
+//        }
+//        if (RPM != this.ReachingTargetRPM) {
+//            this.ReachedTargetRPM = false;
+//        }
+//        this.ReachingTargetRPM = RPM;
+//        this.RunningToRPM = true;
+//    }
+
+//    public void StopRunToRPM() {
+//        if (this.RunningToRPM) {
+//            LMotor.setPower(0);
+//            RMotor.setPower(0);
+//        }
+//        this.ReachingTargetRPM = 0;
+//        this.RunningToRPM = false;
+//    }
 
     public void ServosUp() {
         LServ.setPosition(0.625);
@@ -136,5 +155,9 @@ public class OutTake {
     public void Stop() {
         LMotor.setPower(0);
         RMotor.setPower(0);
+        LMotor.setVelocity(0);
+        RMotor.setVelocity(0);
     }
+
+
 }

@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -58,8 +59,8 @@ public class TeleOpTest0 extends OpMode {
         this.DriveController.Init(FlMotor, FrMotor, BlMotor, BrMotor, gamepad1, gamepad2, Imu);
         this.DriveController.SetDriveMode(Drive.DriveMode.CONTROLLER_DRIVEN);
 
-        DcMotor OutLeft = hardwareMap.get(DcMotor.class, "outl");
-        DcMotor OutRight = hardwareMap.get(DcMotor.class, "outr");
+        DcMotorEx OutLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "outl");
+        DcMotorEx OutRight = (DcMotorEx) hardwareMap.get(DcMotor.class, "outr");
 
         Servo OutLeftServo = hardwareMap.get(Servo.class, "outservol");
         Servo OutRightServo = hardwareMap.get(Servo.class, "outservor");
@@ -109,11 +110,6 @@ public class TeleOpTest0 extends OpMode {
         this.OutTakeController.Update(DeltaTime);
         this.IntakeController.Update(DeltaTime);
 
-        if (gamepad1.a) {
-            this.OutTakeController.RunToRPM(this.TargetRPM);
-        } else {
-            this.OutTakeController.StopRunToRPM();
-        }
 
         if (gamepad1.b) {
             this.OutTakeController.ServosUp();
@@ -168,13 +164,13 @@ public class TeleOpTest0 extends OpMode {
             this.DecoderWheelController.RevolveLeft();
         }
 
-//        if (gamepad1.left_trigger > 0.5) {
-//            this.TargetRPM -= 350 * DeltaTime;
-//        }
-//
-//        if (gamepad1.right_trigger > 0.5) {
-//            this.TargetRPM += 350 * DeltaTime;
-//        }
+        if (gamepad1.left_trigger > 0.5) {
+            this.TargetRPM -= 350 * DeltaTime;
+        }
+
+        if (gamepad1.right_trigger > 0.5) {
+            this.TargetRPM += 350 * DeltaTime;
+        }
 
         // if (gamepad1.right_bumper && !LastRightBump) {
         //     this.DecoderWheelController.OpenToIntake();
@@ -214,25 +210,47 @@ public class TeleOpTest0 extends OpMode {
             //Do something
         }
         //Z-targeting: works like in Zelda (:
-        //Hold LeftTrigger to hold orientation on Apriltag
+        //Hold RightTrigger to hold orientation on Apriltag
         LLResult result = limelight.getLatestResult();
         if (result != null && result.isValid()) {
             double tx = result.getTx(); // Target left/right distance from center of fov (degrees)
             double ty = result.getTy(); // Target up/down distance from center of fov (degrees)
             double ta = result.getTa(); // Target area (0-100% of fov)
+
             DriveController.setLimelightTx(result.getTx()); // Pass Tx to drive controller
+
             telemetry.addData("Target X", tx);
             telemetry.addData("Target Y", ty);
             telemetry.addData("Target Area", ta);
         }
 
-        if (gamepad1.right_trigger > 0.5) {
+        if (gamepad1.y && result != null && result.isValid()) {
             this.DriveController.SetDriveMode(Drive.DriveMode.CONTROLLER_DRIVEN_WITH_Z_TARGETING);
         } else {
             this.DriveController.SetDriveMode(Drive.DriveMode.CONTROLLER_DRIVEN);
         }
 
+        if (gamepad1.a && result.isValid()) {
 
+            // Finds the distance between the camera and the currently targeted apriltag. Method is explained in detail at https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-estimating-distance
+            double targetOffsetAngle_Vertical = result.getTy();
+
+            double limelightMountAngle = 21.0; // Camera is 21 degrees back from vertical
+
+            double limelightLensHeight = 12.6; // Lens height from the floor in inches
+
+            double targetHeight = 33.0; // Height of target. 33.O IS THE CORRECT VALUE FOR THE WOODEN DOWEL MODEL!!! CHANGE BEFORE COMPETITION!!!
+
+            double angleToGoal =  Math.toRadians(limelightMountAngle + targetOffsetAngle_Vertical);
+
+            double targetDistance = (targetHeight - limelightLensHeight)/Math.tan(angleToGoal);
+
+            telemetry.addData("Target Distance",targetDistance);
+
+            this.OutTakeController.SetVelocity(((targetDistance*6)+1800)*24/60);
+        } else {
+            this.OutTakeController.Stop();
+        }
 
         telemetry.addData("Red", colors.red);
         telemetry.addData("Green", colors.green);

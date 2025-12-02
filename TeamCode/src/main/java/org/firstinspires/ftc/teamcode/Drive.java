@@ -138,7 +138,7 @@ public class Drive {
                 DriveDirection.DivNum(2);
             }
 
-            MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), 0.01 * limelightTx , 1);
+            MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), 0.025 * limelightTx , 1);
         }
 
         if (this.CurrentState != DriveState.IDLE) {
