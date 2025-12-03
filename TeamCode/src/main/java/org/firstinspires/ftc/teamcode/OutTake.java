@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -104,6 +106,11 @@ public class OutTake {
         telemetry.addData("Right RPM", RightMsg);
         telemetry.addData("LPower", this.LPower);
         telemetry.addData("RPower", this.RPower);
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("LeftRPM", LeftRPM);
+        packet.put("RightRPM", RightRPM);
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         LastLRevs = LRevs;
         LastRRevs = RRevs;
