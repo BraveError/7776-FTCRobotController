@@ -28,7 +28,7 @@ public class Drive {
 
     private DriveState CurrentState = DriveState.IDLE;
     private double CurrentStateTimer;
-
+    private boolean AprilTagTargetMode = false;
     private DriveMode CurrentMode = DriveMode.MANUAL;
 
     private double DriveSpeedMult = 1;
@@ -52,11 +52,8 @@ public class Drive {
 
     public enum DriveMode {
         MANUAL,
-        CONTROLLER_DRIVEN,
-        CONTROLLER_DRIVEN_WITH_Z_TARGETING
+        CONTROLLER_DRIVEN
     }
-
-
 
     public void Init(DcMotor FlDrive, DcMotor FrDrive, DcMotor BlDrive, DcMotor BrDrive, Gamepad Gamepad1, Gamepad Gamepad2, IMU Imu2) {
         this.FlMotor = FlDrive;
@@ -124,21 +121,14 @@ public class Drive {
                 DriveDirection.DivNum(2);
             }
 
-            MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), Gamepad1.right_stick_x * Gamepad1.right_stick_x * Math.signum(Gamepad1.right_stick_x) * RotSpeedMult, 1);
-        }
-
-        if (this.CurrentMode == DriveMode.CONTROLLER_DRIVEN_WITH_Z_TARGETING) {
-            Vector2 DriveDirection = new Vector2(Gamepad1.left_stick_x, Gamepad1.left_stick_y);
-            DriveDirection.MultNum(-1);
-            //DriveDirection.MultVector2(new Vector2(1, -1));
-            DriveDirection.SquareVectWithSign(); // Square the input for a better speed curve
-            DriveDirection.MultNum(DriveSpeedMult);
-
-            if (Gamepad1.b) {
-                DriveDirection.DivNum(2);
+            double turnAmount;
+            if (this.AprilTagTargetMode) {
+                turnAmount = 0.025 * limelightTx;
+            } else {
+                turnAmount = Gamepad1.right_stick_x * Gamepad1.right_stick_x * Math.signum(Gamepad1.right_stick_x) * RotSpeedMult;
             }
 
-            MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), 0.025 * limelightTx , 1);
+            MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), turnAmount, 1);
         }
 
         if (this.CurrentState != DriveState.IDLE) {
@@ -152,6 +142,10 @@ public class Drive {
             this.BlMotor.setPower(0);
             this.BrMotor.setPower(0);
         }
+    }
+
+    public void SetTargetingAprilTag(boolean isTargeting){
+        this.AprilTagTargetMode = isTargeting;
     }
 
     public void SetDriveMode(DriveMode Mode) {
