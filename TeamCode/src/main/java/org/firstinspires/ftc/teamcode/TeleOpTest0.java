@@ -41,7 +41,7 @@ public class TeleOpTest0 extends OpMode {
     private NormalizedColorSensor ColorSensor;
 
     private ElapsedTime runtime = new ElapsedTime();
-    private double capturetime;
+    private double capturetime = Double.POSITIVE_INFINITY;
 
     @Override
     // Has to be lowercase init()
@@ -218,16 +218,16 @@ public class TeleOpTest0 extends OpMode {
         // "capturetime" is used to allow the ball to settle before rotating and to prevent misfires (caused by sensor looking through a hole in the ball or a momentary bad value)
         // All three color values being compared to 0.02 will cause the system to trigger on essentially any object with color, should maybe be tuned for specific ball colors (or indexing could be handled elsewhere)
         NormalizedRGBA colors = ColorSensor.getNormalizedColors();
-        if (colors.red > 0.04 || colors.green > 0.04 || colors.blue > 0.04) { // Color sensor values typically float between 0.01 and 0.02 when looking at nothing, and are normally between 0.08 and 0.6 for colored objects (depending on the color)
+        if (colors.red > 0.1 || colors.green > 0.1 || colors.blue > 0.1) { // Color sensor values typically float between 0.01 and 0.02 when looking at nothing, and are normally between 0.08 and 0.6 for colored objects (depending on the color)
             this.BallDetected = true;
-            this.capturetime = runtime.seconds() + 0.2; // Robot will wait for 0.2 seconds after it last saw the ball before triggering
+            this.capturetime = runtime.seconds() ; // Robot will wait for 0.2 seconds after it last saw the ball before triggering
         } else {
             this.BallDetected = false;
         }
 
-        if (!BallDetected && capturetime < runtime.seconds()) {
+        if (!BallDetected && runtime.seconds() > capturetime + 0.2) {
             this.DecoderWheelController.RevolveRight();
-            this.capturetime = 0; //Reset capturetime to prevent accumulating rotation requests every frame
+            this.capturetime = Double.POSITIVE_INFINITY; //Reset capturetime to prevent accumulating rotation requests every frame
         }
 
 
