@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -28,6 +29,8 @@ public class TeleOpTest0 extends OpMode {
     private boolean LastDpadLeft = false;
     private boolean LastRightBump = false;
 
+    private boolean BallDetected = false;
+
     private double TargetRPM = 1700;
 
     private Servo TiltServo;
@@ -37,7 +40,8 @@ public class TeleOpTest0 extends OpMode {
 
     private NormalizedColorSensor ColorSensor;
 
-
+    private ElapsedTime runtime = new ElapsedTime();
+    private double capturetime;
 
     @Override
     // Has to be lowercase init()
@@ -88,6 +92,8 @@ public class TeleOpTest0 extends OpMode {
         TiltServo.setPosition(TiltServoPos);
 
         ColorSensor = hardwareMap.get(NormalizedColorSensor.class, "colorsensor");
+
+        runtime.reset();
 
 
         this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -208,11 +214,24 @@ public class TeleOpTest0 extends OpMode {
             this.TargetRPM = 1500;
         }
 
-        //Ball detection with color sensor
+        // Ball detection with color sensor
+        // "capturetime" is used to allow the ball to settle before rotating and to prevent misfires (caused by sensor looking through a hole in the ball or a momentary bad value)
+        // All three color values being compared to 0.02 will cause the system to trigger on essentially any object with color, should maybe be tuned for specific ball colors (or indexing could be handled elsewhere)
         NormalizedRGBA colors = ColorSensor.getNormalizedColors();
-        if (colors.red > 0.02) {
-            //Do something
+        if (colors.red > 0.04 || colors.green > 0.04 || colors.blue > 0.04) { // Color sensor values typically float between 0.01 and 0.02 when looking at nothing, and are normally between 0.08 and 0.6 for colored objects (depending on the color)
+            this.BallDetected = true;
+            this.capturetime = runtime.seconds() + 0.2; // Robot will wait for 0.2 seconds after it last saw the ball before triggering
+        } else {
+            this.BallDetected = false;
         }
+
+        if (!BallDetected && capturetime < runtime.seconds()) {
+            this.DecoderWheelController.RevolveRight();
+            this.capturetime = 0; //Reset capturetime to prevent accumulating rotation requests every frame
+        }
+
+
+
         //Z-targeting: works like in Zelda (:
         //Hold RightTrigger to hold orientation on Apriltag
         LLResult result = limelight.getLatestResult();
@@ -259,6 +278,7 @@ public class TeleOpTest0 extends OpMode {
         telemetry.addData("Red", colors.red);
         telemetry.addData("Green", colors.green);
         telemetry.addData("Blue", colors.blue);
+        telemetry.addData("Ball Detected: ", BallDetected);
 
         telemetry.addData("TiltServoPos", this.TiltServoPos);
         telemetry.addData("TargetRPM", Math.round(this.TargetRPM));
