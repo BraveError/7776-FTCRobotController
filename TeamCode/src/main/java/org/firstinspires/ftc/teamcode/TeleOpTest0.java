@@ -13,13 +13,14 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 
 import static java.lang.System.currentTimeMillis;
 
 @TeleOp(name="TeleOpTest0", group="Iterative Opmode")
 public class TeleOpTest0 extends OpMode {
+    public static final double RETRACT_INTAKE_TIME = 0;
+    public static final double REVOLVE_TIME = 0.1;
+    public static final double REVOLVE_FINISH_TIME = 0.3;
     private Drive DriveController;
     private OutTake OutTakeController;
     private Intake IntakeController;
@@ -32,8 +33,9 @@ public class TeleOpTest0 extends OpMode {
     private boolean LastRightBump = false;
 
     private boolean BallDetected = false;
+    private boolean RotatedAfterIntaking = false;
 
-    private double TargetRPM = 1700;
+//    private double TargetRPM = 1700;
 
     private Servo TiltServo;
     private double TiltServoPos = 0.51;
@@ -43,7 +45,7 @@ public class TeleOpTest0 extends OpMode {
     private NormalizedColorSensor ColorSensor;
 
     private ElapsedTime runtime = new ElapsedTime();
-    private double capturetime = Double.POSITIVE_INFINITY;
+    private double ballDetectTime = Double.POSITIVE_INFINITY;
 
     @Override
     // Has to be lowercase init()
@@ -129,20 +131,34 @@ public class TeleOpTest0 extends OpMode {
             this.OutTakeController.ServosDown();
         }
 
-        if (gamepad1.right_bumper && this.DecoderWheelController.GetIsAtTarget()) {
-            this.IntakeController.SetPower(1);
-            this.IntakeController.ServosToIntake();
-            this.DecoderWheelController.IntakeModeOn();
-            // } else if (gamepad1.y) {
-            //     this.IntakeController.SetPower(-1);
-            //     this.IntakeController.DisableServos();
-        } else {
-            this.IntakeController.SetPower(0);
+        boolean currentlyIntaking = gamepad1.right_bumper;
+
+        if (runtime.seconds() > ballDetectTime + REVOLVE_FINISH_TIME) {
+            this.ballDetectTime = Double.POSITIVE_INFINITY;
+        } else if (runtime.seconds() > ballDetectTime + REVOLVE_TIME) {
+            if (!RotatedAfterIntaking) {
+                RotatedAfterIntaking = true;
+                this.DecoderWheelController.RevolveRight();
+            }
             this.IntakeController.ServosToNeutral();
+        } else if (runtime.seconds() > ballDetectTime + RETRACT_INTAKE_TIME) {
+            RotatedAfterIntaking = false;
+            this.IntakeController.ServosToNeutral();
+        } else if (currentlyIntaking) {
+            this.IntakeController.ServosToIntake();
+        } else {
+            this.IntakeController.ServosToNeutral();
+        }
+
+        if (currentlyIntaking) {
+            this.DecoderWheelController.IntakeModeOn();
+        } else {
             this.DecoderWheelController.IntakeModeOff();
         }
 
         this.DecoderWheelController.Update(DeltaTime);
+        this.IntakeController.SetPower(currentlyIntaking || !this.DecoderWheelController.GetIsAtTarget()
+            ? 1.0 : 0.0);
 
         // if (gamepad1.right_bumper) {
         //     this.ShakePos += 0.5;
@@ -176,13 +192,13 @@ public class TeleOpTest0 extends OpMode {
             this.DecoderWheelController.RevolveLeft();
         }
 
-        if (gamepad1.left_trigger > 0.5) {
-            this.TargetRPM -= 350 * DeltaTime;
-        }
+//        if (gamepad1.left_trigger > 0.5) {
+//            this.TargetRPM -= 350 * DeltaTime;
+//        }
 
-        if (gamepad1.right_trigger > 0.5) {
-            this.TargetRPM += 350 * DeltaTime;
-        }
+//        if (gamepad1.right_trigger > 0.5) {
+//            this.TargetRPM += 350 * DeltaTime;
+//        }
 
         // if (gamepad1.right_bumper && !LastRightBump) {
         //     this.DecoderWheelController.OpenToIntake();
@@ -204,40 +220,30 @@ public class TeleOpTest0 extends OpMode {
         // }
         // this.DecoderWheelController.SetPower(0);
 
-        if (gamepad1.dpad_up) {
-            this.TiltServoPos = 0.572;
-            this.TiltServo.setPosition(this.TiltServoPos);
-            this.TargetRPM = 1500;
-        }
-
-        if (gamepad1.dpad_down) {
-            this.TiltServoPos = 0.51;
-            this.TiltServo.setPosition(this.TiltServoPos);
-            this.TargetRPM = 1500;
-        }
+//        if (gamepad1.dpad_up) {
+//            this.TiltServoPos = 0.572;
+//            this.TiltServo.setPosition(this.TiltServoPos);
+//            this.TargetRPM = 1500;
+//        }
+//
+//        if (gamepad1.dpad_down) {
+//            this.TiltServoPos = 0.51;
+//            this.TiltServo.setPosition(this.TiltServoPos);
+//            this.TargetRPM = 1500;
+//        }
 
         // Ball detection with color sensor
         // "capturetime" is used to allow the ball to settle before rotating and to prevent misfires (caused by sensor looking through a hole in the ball or a momentary bad value)
         // All three color values being compared to 0.01 will cause the system to trigger on essentially any object with color, should maybe be tuned for specific ball colors (or indexing could be handled elsewhere)
         NormalizedRGBA colors = ColorSensor.getNormalizedColors();
-        if (colors.red > 0.01 || colors.green > 0.01 || colors.blue > 0.01) { // Color sensor values typically float between 0.001 and 0.002 when looking at nothing, and are normally between 0.01 and 0.03 for colored objects (depending on the color)
-            this.BallDetected = true;
-            this.capturetime = runtime.seconds() ; // Robot will wait for 0.2 seconds after it last saw the ball before triggering
-        } else {
-            this.BallDetected = false;
+        if (Double.isInfinite(ballDetectTime)) {
+            if (colors.red > 0.01 || colors.green > 0.01 || colors.blue > 0.01) { // Color sensor values typically float between 0.001 and 0.002 when looking at nothing, and are normally between 0.01 and 0.03 for colored objects (depending on the color)
+                this.BallDetected = true;
+                this.ballDetectTime = runtime.seconds();
+            } else {
+                this.BallDetected = false;
+            }
         }
-
-        if (runtime.seconds() > capturetime + 0.1) {
-            this.IntakeController.ServosToNeutral();
-        }
-
-        if (runtime.seconds() > capturetime + 0.3) {
-
-            this.DecoderWheelController.RevolveRight();
-            this.capturetime = Double.POSITIVE_INFINITY; //Reset capturetime to prevent accumulating rotation requests every frame
-        }
-
-
 
         //Z-targeting: works like in Zelda (:
         //Hold RightTrigger to hold orientation on Apriltag
@@ -290,7 +296,7 @@ public class TeleOpTest0 extends OpMode {
         telemetry.addData("Ball Detected: ", BallDetected);
 
         telemetry.addData("TiltServoPos", this.TiltServoPos);
-        telemetry.addData("TargetRPM", Math.round(this.TargetRPM));
+//        telemetry.addData("TargetRPM", Math.round(this.TargetRPM));
         telemetry.update();
 
         LastDpadRight = gamepad1.dpad_right;

@@ -4,7 +4,6 @@ import static java.lang.System.currentTimeMillis;
 
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Twist2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -73,19 +72,21 @@ public class AutoTest2 extends LinearOpMode {
                             .turnTo(90)
                             .build(),
                     this.IntakeController.AutoStartIntaking(),
-                    drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(0, 0), 90)))
+                    drive.actionBuilder(beginPose)
                             .strafeTo(new Vector2d(27.5, 23))
+                            .turnTo(90)
                             .build(),
                     new SleepAction(0.5),
                     this.DecoderWheelController.AutoRevolveRight(),
                     new SleepAction(0.5),
-                    drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(0, 0), 90)))
+                    drive.actionBuilder(beginPose)
                             .strafeTo(new Vector2d(27.5, 28))
+                            .turnTo(90)
                             .build(),
                     new SleepAction(0.5),
                     this.DecoderWheelController.AutoRevolveRight(),
                     new SleepAction(0.5),
-                    drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(0, 0), 90)))
+                    drive.actionBuilder(beginPose)
                             .strafeTo(new Vector2d(27.5, 33))
                             .turnTo(90)
                             .build(),
