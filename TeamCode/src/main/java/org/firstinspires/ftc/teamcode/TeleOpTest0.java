@@ -129,7 +129,7 @@ public class TeleOpTest0 extends OpMode {
             this.OutTakeController.ServosDown();
         }
 
-        if (gamepad1.right_bumper && runtime.seconds() < capturetime + 0.3) {
+        if (gamepad1.right_bumper && this.DecoderWheelController.GetIsAtTarget()) {
             this.IntakeController.SetPower(1);
             this.IntakeController.ServosToIntake();
             this.DecoderWheelController.IntakeModeOn();
@@ -232,6 +232,7 @@ public class TeleOpTest0 extends OpMode {
         }
 
         if (runtime.seconds() > capturetime + 0.3) {
+
             this.DecoderWheelController.RevolveRight();
             this.capturetime = Double.POSITIVE_INFINITY; //Reset capturetime to prevent accumulating rotation requests every frame
         }

@@ -33,6 +33,8 @@ public class DecoderWheel {
 
     private boolean IsCurrentlyOpenToIntake = false;
 
+    private boolean IsAtTarget = false;
+
     private Intake IntakeController;
 
     public enum BallColor {
@@ -69,22 +71,21 @@ public class DecoderWheel {
     public void Update(double DeltaTime) {
         this.CurrAngle = this.Motor.getCurrentPosition() / TicksPerRev * 360;
 
-        boolean OffTarget = false;
-
         boolean isClose = Math.abs(this.TargetAngle - this.CurrAngle) < CloseAngleDeviation;
         double baseMotorPower = isClose ? CloseMotorPower : MaxMotorPower;
 
         if (this.CurrAngle < this.TargetAngle - AcceptableAngleDeviation) {
             this.Motor.setPower(baseMotorPower);
-            OffTarget = true;
+            IsAtTarget = false;
         } else if (this.CurrAngle > this.TargetAngle + AcceptableAngleDeviation) {
             this.Motor.setPower(-baseMotorPower);
-            OffTarget = true;
+            IsAtTarget = false;
         } else {
             this.Motor.setPower(0);
+            IsAtTarget = true;
         }
 
-        if (OffTarget) {
+        if (!IsAtTarget) {
             this.IntakeController.SetPower(1);
         }
 
@@ -100,6 +101,10 @@ public class DecoderWheel {
 //
 //        telemetry.addData("target angle", this.TargetAngle);
 //        this.Motor.setTargetPosition((int)(this.TargetAngle * TicksPerRev / 360.0));
+    }
+
+    public boolean GetIsAtTarget() {
+        return this.IsAtTarget;
     }
 
     /*
