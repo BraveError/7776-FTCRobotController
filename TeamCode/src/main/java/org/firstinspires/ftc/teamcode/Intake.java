@@ -115,4 +115,24 @@ public class Intake {
     public Action AutoStopIntaking() {
         return new AutoStopIntakingClass();
     }
+
+    public class AutoStartIntakingForRevolveClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                ServosToNeutral();
+                SetPower(1);
+                Update(1/RampUpSpeed);
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoStartIntakingForRevolve() {
+        return new AutoStartIntakingForRevolveClass();
+    }
 }

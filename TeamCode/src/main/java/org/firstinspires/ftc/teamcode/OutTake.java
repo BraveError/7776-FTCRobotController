@@ -176,4 +176,76 @@ public class OutTake {
         LMotor.setVelocity(0);
         RMotor.setVelocity(0);
     }
+
+    public class AutoSpinUpClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                SetPower(0.7);
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoSpinUp() {
+        return new OutTake.AutoSpinUpClass();
+    }
+
+    public class AutoSpinDownClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                SetPower(0);
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoSpinDown() {
+        return new OutTake.AutoSpinDownClass();
+    }
+
+    public class AutoServosUpClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                ServosUp();
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoServosUp() {
+        return new OutTake.AutoServosUpClass();
+    }
+
+    public class AutoServosDownClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                ServosDown();
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoServosDown() {
+        return new OutTake.AutoServosDownClass();
+    }
 }

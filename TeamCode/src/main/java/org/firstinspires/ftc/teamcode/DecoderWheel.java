@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.System.currentTimeMillis;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -89,8 +91,8 @@ public class DecoderWheel {
             this.IntakeController.SetPower(1);
         }
 
-        telemetry.addData("Current angle", this.CurrAngle);
-        telemetry.addData("Motor", this.Motor.getCurrentPosition());
+        //telemetry.addData("Current angle", this.CurrAngle);
+        //telemetry.addData("Motor", this.Motor.getCurrentPosition());
 //        this.Motor.setPositionPIDFCoefficients(RobotConfig.DecoderWheelPosP);
 //        this.Motor.setVelocityPIDFCoefficients(
 //            RobotConfig.DecoderWheelVelP,
@@ -195,13 +197,13 @@ public class DecoderWheel {
         this.Motor.setPower(0);
     }
 
-    public class AutoRevolveRightClass implements Action {
+    public class AutoRevolveLeftClass implements Action {
         private boolean initialized = false;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
-                RevolveRight();
+                RevolveLeft();
                 initialized = true;
             }
 
@@ -209,7 +211,62 @@ public class DecoderWheel {
         }
     }
 
-    public Action AutoRevolveRight() {
-        return new AutoRevolveRightClass();
+    public Action AutoRevolveLeft() {
+        return new AutoRevolveLeftClass();
+    }
+
+    public class AutoIntakeModeOnClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                IntakeModeOn();
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoIntakeModeOn() {
+        return new AutoIntakeModeOnClass();
+    }
+
+    public class AutoIntakeModeOffClass implements Action {
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                IntakeModeOff();
+                initialized = true;
+            }
+
+            return false;
+        }
+    }
+
+    public Action AutoIntakeModeOff() {
+        return new AutoIntakeModeOffClass();
+    }
+
+    public class AutoStartUpdateLoopClass implements Action {
+        double LastRecTime = currentTimeMillis();
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            long CurrTime = currentTimeMillis();
+            double DeltaTime = (CurrTime / 1000.0) - LastRecTime;
+            LastRecTime = CurrTime / 1000.0;
+
+            Update(DeltaTime);
+
+            return true;
+        }
+    }
+
+    public Action AutoStartUpdateLoop() {
+        return new AutoStartUpdateLoopClass();
     }
 }
