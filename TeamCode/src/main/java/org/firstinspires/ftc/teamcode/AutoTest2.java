@@ -4,6 +4,7 @@ import static java.lang.System.currentTimeMillis;
 
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.acmerobotics.roadrunner.ftc.DeadWheelDirectionDebugger;
@@ -107,30 +108,36 @@ public class AutoTest2 extends LinearOpMode {
 //            ));
 
             Actions.runBlocking(new ParallelAction(
-                    this.DecoderWheelController.AutoStartUpdateLoop(),
-                    new SequentialAction(
-                        this.DecoderWheelController.AutoIntakeModeOn(),
-                        this.IntakeController.AutoStartIntaking(),
-                        drive.actionBuilder(beginPose)
-                                .splineToSplineHeading(new Pose2d(28, 24, Math.PI / 2), Math.PI / 2)
-                                .build(),
-                        new SleepAction(0.5),
-                        this.IntakeController.AutoStopIntaking(),
-                        this.DecoderWheelController.AutoIntakeModeOff(),
-                        drive.actionBuilder(beginPose)
-                                .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
-                                .build(),
-                        this.DecoderWheelController.AutoRevolveLeft(),
-                        this.IntakeController.AutoStartIntakingForRevolve(),
-                        new SleepAction(0.6),
-                        this.OutTakeController.AutoSpinUp(),
-                        this.IntakeController.AutoStopIntaking(),
-                        new SleepAction(4),
-                        this.OutTakeController.AutoServosUp(),
-                        new SleepAction(1),
-                        this.OutTakeController.AutoSpinDown(),
-                        this.OutTakeController.AutoServosDown()
-            )));
+                new UpdateAction(() -> this.DecoderWheelController::Update),
+                new UpdateAction(() -> this.IntakeController::Update),
+                new SequentialAction(
+                    new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+                    new InstantAction(() -> this.IntakeController.ServosToIntake()),
+                    new InstantAction(() -> this.IntakeController.SetPower(1)),
+                    drive.actionBuilder(beginPose)
+                            .splineToSplineHeading(new Pose2d(28, 24, Math.PI / 2), Math.PI / 2)
+                            .build(),
+                    new SleepAction(0.5),
+                    new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+                    new InstantAction(() -> this.IntakeController.SetPower(0)),
+                    new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
+                    drive.actionBuilder(beginPose)
+                            .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
+                            .build(),
+                    new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
+                    new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+                    new InstantAction(() -> this.IntakeController.SetPower(1)),
+                    new SleepAction(0.6),
+                    new InstantAction(() -> this.OutTakeController.SetVelocity(2000)),
+                    new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+                    new InstantAction(() -> this.IntakeController.SetPower(0)),
+                    new SleepAction(4),
+                    new InstantAction(() -> this.OutTakeController.ServosUp()),
+                    new SleepAction(1),
+                    new InstantAction(() -> this.OutTakeController.SetVelocity(0)),
+                    new InstantAction(() -> this.OutTakeController.ServosDown()),
+                )
+            ));
         } else {
             throw new RuntimeException();
         }

@@ -33,7 +33,7 @@ public class OutTake {
     private double LPower = 1;
     private double RPower = 1;
     private double WantedRPM = 5100;
-    private boolean RunningToRPM = false;
+    // private boolean RunningToRPM = false;
 
     private boolean ReachedTargetRPM = false;
     private double ReachingTargetRPM = 0; // RPM
@@ -124,12 +124,6 @@ public class OutTake {
         LastRRevs = RRevs;
     }
 
-    public void SetPower(double Power) {
-        LMotor.setPower(Power);
-        RMotor.setPower(Power);
-        this.RunningToRPM = false;
-    }
-
     public void SetVelocity(double Velocity) {
         double MaxTicksPerSecond = 28.0 / (60.0 / 6000.0);
         LMotor.setVelocity(Velocity * MaxTicksPerSecond);
@@ -169,81 +163,6 @@ public class OutTake {
     }
 
     public void Stop() {
-        LMotor.setPower(0);
-        RMotor.setPower(0);
-        LMotor.setVelocity(0);
-        RMotor.setVelocity(0);
-    }
-
-    public class AutoSpinUpClass implements Action {
-        private boolean initialized = false;
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                SetPower(0.7);
-                initialized = true;
-            }
-
-            return false;
-        }
-    }
-
-    public Action AutoSpinUp() {
-        return new OutTake.AutoSpinUpClass();
-    }
-
-    public class AutoSpinDownClass implements Action {
-        private boolean initialized = false;
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                SetPower(0);
-                initialized = true;
-            }
-
-            return false;
-        }
-    }
-
-    public Action AutoSpinDown() {
-        return new OutTake.AutoSpinDownClass();
-    }
-
-    public class AutoServosUpClass implements Action {
-        private boolean initialized = false;
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                ServosUp();
-                initialized = true;
-            }
-
-            return false;
-        }
-    }
-
-    public Action AutoServosUp() {
-        return new OutTake.AutoServosUpClass();
-    }
-
-    public class AutoServosDownClass implements Action {
-        private boolean initialized = false;
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                ServosDown();
-                initialized = true;
-            }
-
-            return false;
-        }
-    }
-
-    public Action AutoServosDown() {
-        return new OutTake.AutoServosDownClass();
+        SetVelocity(0);
     }
 }
