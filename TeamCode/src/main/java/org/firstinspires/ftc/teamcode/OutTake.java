@@ -20,19 +20,21 @@ public class OutTake {
     private Servo LServ;
     private Servo RServ;
 
+    private Servo TiltServo;
+
     private double LeftTicksPerRev = 28;
     private double RightTicksPerRev = 28;
 
     private double LastLRevs = 0;
     private double LastRRevs = 0;
 
-    private double AproxMaxRPM = 6000;
+    private double ApproxMaxRPM = 6000;
 
     private double PowerChangeSpeed = 1;
 
     private double LPower = 1;
     private double RPower = 1;
-    private double WantedRPM = 5100;
+    // private double WantedRPM = 5100;
     // private boolean RunningToRPM = false;
 
     private boolean ReachedTargetRPM = false;
@@ -42,15 +44,11 @@ public class OutTake {
     public static final double NEW_I = 50;
     public static final double NEW_D = 100;
 
-    public void Init(DcMotorEx LeftMotor, DcMotorEx RightMotor, Servo LeftServo, Servo RightServo) {
+    public static final double TILT_SERVO_DEFAULT_POS = 0.51;
+
+    public void Init(DcMotorEx LeftMotor, DcMotorEx RightMotor, Servo LeftServo, Servo RightServo, Servo TiltServo) {
         LMotor = LeftMotor;
         RMotor = RightMotor;
-
-        LServ = LeftServo;
-        RServ = RightServo;
-
-        LServ.setDirection(Servo.Direction.REVERSE);
-        RServ.setDirection(Servo.Direction.FORWARD);
 
         LMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -63,6 +61,15 @@ public class OutTake {
 
         LMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         RMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        LServ = LeftServo;
+        RServ = RightServo;
+
+        LServ.setDirection(Servo.Direction.REVERSE);
+        RServ.setDirection(Servo.Direction.FORWARD);
+
+        this.TiltServo = TiltServo;
+        this.TiltServo.setPosition(TILT_SERVO_DEFAULT_POS);
     }
 
     public void Update(double DeltaTime) {
@@ -104,8 +111,8 @@ public class OutTake {
 //            }
 //        }
 
-        String LeftMsg = String.valueOf(Math.round(LeftRPM)) + " / " + String.valueOf(this.AproxMaxRPM) + " (" + String.valueOf(Math.round(LeftRPM / this.AproxMaxRPM)) + "%)";
-        String RightMsg = String.valueOf(Math.round(RightRPM)) + " / " + String.valueOf(this.AproxMaxRPM) + " (" + String.valueOf(Math.round(RightRPM / this.AproxMaxRPM)) + "%)";
+        String LeftMsg = String.valueOf(Math.round(LeftRPM)) + " / " + String.valueOf(this.ApproxMaxRPM) + " (" + String.valueOf(Math.round(LeftRPM / this.ApproxMaxRPM)) + "%)";
+        String RightMsg = String.valueOf(Math.round(RightRPM)) + " / " + String.valueOf(this.ApproxMaxRPM) + " (" + String.valueOf(Math.round(RightRPM / this.ApproxMaxRPM)) + "%)";
 
         Globals.telemetry.addData("Left RPM", LeftMsg);
         Globals.telemetry.addData("Right RPM", RightMsg);
@@ -125,7 +132,7 @@ public class OutTake {
     }
 
     public void SetVelocity(double Velocity) {
-        double MaxTicksPerSecond = 28.0 / (60.0 / 6000.0);
+        double MaxTicksPerSecond = 28.0 / (60.0 / ApproxMaxRPM);
         LMotor.setVelocity(Velocity * MaxTicksPerSecond);
         RMotor.setVelocity(Velocity * MaxTicksPerSecond);
     }

@@ -1,0 +1,67 @@
+package org.firstinspires.ftc.teamcode;
+
+public class RobotAbstractor {
+    public final Drive DriveSys;
+    public final OutTake OutTakeSys;
+    public final Intake IntakeSys;
+    public final DecoderWheel DecoderWheelSys;
+
+    public final Limelight3A Limelight;
+
+    public final NormalizedColorSensor ColorSensor;
+
+    public RobotAbstractor(HardwareMap hardwareMap) {
+        DcMotor FlMotor = hardwareMap.get(DcMotor.class, "fl");
+        DcMotor FrMotor = hardwareMap.get(DcMotor.class, "fr");
+        DcMotor BlMotor = hardwareMap.get(DcMotor.class, "bl");
+        DcMotor BrMotor = hardwareMap.get(DcMotor.class, "br");
+
+        IMU Imu = hardwareMap.get(IMU.class, "imu");
+
+        this.DriveSys = new Drive();
+        this.DriveSys.Init(FlMotor, FrMotor, BlMotor, BrMotor, gamepad1, gamepad2, Imu);
+
+        DcMotorEx OutLeft = (DcMotorEx)hardwareMap.get(DcMotor.class, "outl");
+        DcMotorEx OutRight = (DcMotorEx)hardwareMap.get(DcMotor.class, "outr");
+
+        Servo OutLeftServo = hardwareMap.get(Servo.class, "outservol");
+        Servo OutRightServo = hardwareMap.get(Servo.class, "outservor");
+
+        Servo TiltServo = hardwareMap.get(Servo.class, "tiltservo");
+
+        this.OutTakeSys = new OutTake();
+        this.OutTakeSys.Init(OutLeft, OutRight, OutLeftServo, OutRightServo, TiltServo);
+
+        Servo InLeftServo = hardwareMap.get(Servo.class, "intakelefts");
+        Servo InRightServo = hardwareMap.get(Servo.class, "intakerights");
+
+        DcMotor InMotor = hardwareMap.get(DcMotor.class, "intake");
+
+        this.IntakeSys = new Intake();
+        this.IntakeSys.Init(InLeftServo, InRightServo, InMotor);
+
+        DcMotor DecoderWheelMotor = hardwareMap.get(DcMotor.class, "ringdrive");
+
+        this.DecoderWheelSys = new DecoderWheel();
+        this.DecoderWheelSys.Init(DecoderWheelMotor);
+
+        this.ColorSensor = hardwareMap.get(NormalizedColorSensor.class, "colorsensor");
+
+        this.Limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        this.Limelight.setPollRateHz(100);
+        this.Limelight.start();
+    }
+
+    public void Update(double DeltaTime) {
+        this.DriveSys.Update(DeltaTime);
+        this.OutTakeSys.Update(DeltaTime);
+        this.IntakeSys.Update(DeltaTime);
+        this.DecoderWheelSys.Update(DeltaTime);
+    }
+
+    public void FullStop() {
+        this.DriveSys.Stop();
+        this.OutTakeSys.Stop();
+        this.IntakeSys.Stop();
+    }
+}

@@ -35,8 +35,6 @@ public class DecoderWheel {
 
     private boolean IsAtTarget = false;
 
-    private Intake IntakeController;
-
     public enum BallColor {
         GREEN,
         PURPLE,
@@ -85,10 +83,6 @@ public class DecoderWheel {
             IsAtTarget = true;
         }
 
-        if (!IsAtTarget) {
-            this.IntakeController.SetPower(1);
-        }
-
         //telemetry.addData("Current angle", this.CurrAngle);
         //telemetry.addData("Motor", this.Motor.getCurrentPosition());
 //        this.Motor.setPositionPIDFCoefficients(RobotConfig.DecoderWheelPosP);
@@ -115,10 +109,6 @@ public class DecoderWheel {
         this.Motor.setPower(0.5);
     }
      */
-
-    public void SetIntake(Intake In) {
-        this.IntakeController = In;
-    }
 
     public void RevolveRight() {
         this.TargetAngle += AddedAngleToRevolveOneStep;
