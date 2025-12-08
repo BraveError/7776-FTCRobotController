@@ -5,6 +5,7 @@ import static java.lang.System.currentTimeMillis;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.acmerobotics.roadrunner.ftc.DeadWheelDirectionDebugger;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -25,9 +26,6 @@ public class AutoTest2 extends LinearOpMode {
     private DecoderWheel DecoderWheelController;
     private OutTake OutTakeController;
 
-    private int AutoStep = -1;
-    private double AutoStepTimer = 0;
-
     @Override
     public void runOpMode() {
         Drive.telemetry = telemetry;
@@ -36,18 +34,6 @@ public class AutoTest2 extends LinearOpMode {
         if (!opModeIsActive()) {
             return;
         }
-
-//        DcMotor FlMotor = hardwareMap.get(DcMotor.class, "fl");
-//        DcMotor FrMotor = hardwareMap.get(DcMotor.class, "fr");
-//        DcMotor BlMotor = hardwareMap.get(DcMotor.class, "bl");
-//        DcMotor BrMotor = hardwareMap.get(DcMotor.class, "br");
-//
-//        IMU Imu = hardwareMap.get(IMU.class, "imu");
-//
-//        // init DiveController for controller drive
-//        this.DriveController = new Drive();
-//        this.DriveController.Init(FlMotor, FrMotor, BlMotor, BrMotor, gamepad1, gamepad2, Imu);
-//        this.DriveController.SetDriveMode(Drive.DriveMode.MANUAL);
 
         Servo InLeftServo = hardwareMap.get(Servo.class, "intakelefts");
         Servo InRightServo = hardwareMap.get(Servo.class, "intakerights");
@@ -79,40 +65,24 @@ public class AutoTest2 extends LinearOpMode {
 
             waitForStart();
 
-//            Actions.runBlocking(new SequentialAction(
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 0))
-//                            .turnTo(90)
-//                            .build(),
-//                    this.IntakeController.AutoStartIntaking(),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 23))
-//                            .turnTo(90)
-//                            .build(),
-//                    new SleepAction(0.5),
-//                    this.DecoderWheelController.AutoRevolveRight(),
-//                    new SleepAction(0.5),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 28))
-//                            .turnTo(90)
-//                            .build(),
-//                    new SleepAction(0.5),
-//                    this.DecoderWheelController.AutoRevolveRight(),
-//                    new SleepAction(0.5),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 33))
-//                            .turnTo(90)
-//                            .build(),
-//                    this.IntakeController.AutoStopIntaking()
-//            ));
-
             Actions.runBlocking(new ParallelAction(
                     this.DecoderWheelController.AutoStartUpdateLoop(),
                     new SequentialAction(
                         this.DecoderWheelController.AutoIntakeModeOn(),
                         this.IntakeController.AutoStartIntaking(),
                         drive.actionBuilder(beginPose)
-                                .splineToSplineHeading(new Pose2d(28, 24, Math.PI / 2), Math.PI / 2)
+                                .splineTo(new Vector2d(28, 0), 0)
+                                .build(),
+                        new SleepAction(0.5),
+                        this.DecoderWheelController.AutoRevolveLeft(),
+                        this.DecoderWheelController.AutoIntakeModeOff(),
+                        this.IntakeController.AutoStartIntakingForRevolve(),
+                        this.DecoderWheelController.AutoIntakeModeOn(),
+                        new SleepAction(0.5),
+                        this.IntakeController.AutoStartIntaking(),
+                        drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(28, 0), 0)))
+                                .turn(Math.PI / 2)
+                                .lineToY(24)
                                 .build(),
                         new SleepAction(0.5),
                         this.IntakeController.AutoStopIntaking(),
@@ -120,16 +90,21 @@ public class AutoTest2 extends LinearOpMode {
                         drive.actionBuilder(beginPose)
                                 .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
                                 .build(),
-                        this.DecoderWheelController.AutoRevolveLeft(),
-                        this.IntakeController.AutoStartIntakingForRevolve(),
-                        new SleepAction(0.6),
                         this.OutTakeController.AutoSpinUp(),
                         this.IntakeController.AutoStopIntaking(),
                         new SleepAction(4),
                         this.OutTakeController.AutoServosUp(),
-                        new SleepAction(1),
-                        this.OutTakeController.AutoSpinDown(),
-                        this.OutTakeController.AutoServosDown()
+                        new SleepAction(0.2),
+                        this.OutTakeController.AutoServosDown(),
+                        new SleepAction(0.2),
+                        this.DecoderWheelController.AutoRevolveLeft(),
+                        this.IntakeController.AutoStartIntakingForRevolve(),
+                        new SleepAction(0.6),
+                        this.IntakeController.AutoStopIntaking(),
+                        this.OutTakeController.AutoServosUp(),
+                        new SleepAction(0.2),
+                        this.OutTakeController.AutoServosDown(),
+                        this.OutTakeController.AutoSpinDown()
             )));
         } else {
             throw new RuntimeException();

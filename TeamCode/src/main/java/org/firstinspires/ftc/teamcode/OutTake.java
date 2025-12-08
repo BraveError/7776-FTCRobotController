@@ -183,7 +183,7 @@ public class OutTake {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
-                SetPower(0.7);
+                SetPower(0.2);
                 initialized = true;
             }
 
