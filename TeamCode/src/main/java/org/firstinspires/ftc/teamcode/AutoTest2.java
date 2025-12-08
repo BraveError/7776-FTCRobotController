@@ -63,16 +63,16 @@ public class AutoTest2 extends LinearOpMode {
         this.DecoderWheelController = new DecoderWheel();
         this.DecoderWheelController.Init(DecoderWheelMotor);
 
-        this.DecoderWheelController.SetIntake(IntakeController);
-
         DcMotorEx OutLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "outl");
         DcMotorEx OutRight = (DcMotorEx) hardwareMap.get(DcMotor.class, "outr");
 
         Servo OutLeftServo = hardwareMap.get(Servo.class, "outservol");
         Servo OutRightServo = hardwareMap.get(Servo.class, "outservor");
 
+        Servo TiltServo = hardwareMap.get(Servo.class, "tiltservo");
+
         this.OutTakeController = new OutTake();
-        this.OutTakeController.Init(OutLeft, OutRight, OutLeftServo, OutRightServo);
+        this.OutTakeController.Init(OutLeft, OutRight, OutLeftServo, OutRightServo, TiltServo);
 
         Pose2d beginPose = new Pose2d(0, 0, 0);
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
@@ -108,8 +108,8 @@ public class AutoTest2 extends LinearOpMode {
 //            ));
 
             Actions.runBlocking(new ParallelAction(
-                new UpdateAction(() -> this.DecoderWheelController::Update),
-                new UpdateAction(() -> this.IntakeController::Update),
+                new UpdateAction(this.DecoderWheelController::Update),
+                new UpdateAction(this.IntakeController::Update),
                 new SequentialAction(
                     new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
                     new InstantAction(() -> this.IntakeController.ServosToIntake()),
@@ -135,7 +135,7 @@ public class AutoTest2 extends LinearOpMode {
                     new InstantAction(() -> this.OutTakeController.ServosUp()),
                     new SleepAction(1),
                     new InstantAction(() -> this.OutTakeController.SetVelocity(0)),
-                    new InstantAction(() -> this.OutTakeController.ServosDown()),
+                    new InstantAction(() -> this.OutTakeController.ServosDown())
                 )
             ));
         } else {

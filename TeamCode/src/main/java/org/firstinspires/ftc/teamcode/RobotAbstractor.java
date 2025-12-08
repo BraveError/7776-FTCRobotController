@@ -1,5 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+
 public class RobotAbstractor {
     public final Drive DriveSys;
     public final OutTake OutTakeSys;
@@ -10,7 +19,7 @@ public class RobotAbstractor {
 
     public final NormalizedColorSensor ColorSensor;
 
-    public RobotAbstractor(HardwareMap hardwareMap) {
+    public RobotAbstractor(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         DcMotor FlMotor = hardwareMap.get(DcMotor.class, "fl");
         DcMotor FrMotor = hardwareMap.get(DcMotor.class, "fr");
         DcMotor BlMotor = hardwareMap.get(DcMotor.class, "bl");

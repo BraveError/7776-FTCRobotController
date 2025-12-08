@@ -2,22 +2,16 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.hardware.limelightvision.LLResult;
 
 import static java.lang.System.currentTimeMillis;
 
 @TeleOp(name="TeleOp", group="Iterative Opmode")
-public class TeleOpTest0 extends OpMode {
+public class TeleOp1 extends OpMode {
     public static final double RETRACT_INTAKE_TIME = 0;
     public static final double REVOLVE_TIME = 0.1;
     public static final double REVOLVE_FINISH_TIME = 0.3;
@@ -41,7 +35,7 @@ public class TeleOpTest0 extends OpMode {
 
         runtime.reset(); // TEMP, maybe remove
 
-        this.Robot = new Robot(hardwareMap);
+        this.Robot = new RobotAbstractor(hardwareMap, gamepad1, gamepad2);
         this.Robot.DriveSys.SetDriveMode(Drive.DriveMode.CONTROLLER_DRIVEN);
     }
 
