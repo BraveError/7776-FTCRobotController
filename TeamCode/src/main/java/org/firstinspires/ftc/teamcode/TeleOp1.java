@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,11 +11,14 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 
 import static java.lang.System.currentTimeMillis;
 
-@TeleOp(name="TeleOp", group="Iterative Opmode")
+@Config
+@TeleOp(name="TeleOp1", group="Iterative Opmode")
 public class TeleOp1 extends OpMode {
     public static final double RETRACT_INTAKE_TIME = 0;
     public static final double REVOLVE_TIME = 0.1;
     public static final double REVOLVE_FINISH_TIME = 0.3;
+
+    public static double OuttakeRPM = 1500;
     
     public RobotAbstractor Robot;
 
@@ -40,15 +44,19 @@ public class TeleOp1 extends OpMode {
     }
 
     // Has to be lowercase loop()
-    double LastRecTime = currentTimeMillis();
+    double LastRecTime = currentTimeMillis() / 1000.0;
     public void loop() {
-        long CurrTime = currentTimeMillis();
-        double DeltaTime = (CurrTime / 1000.0) - LastRecTime;
-        LastRecTime = CurrTime / 1000.0;
+        double CurrTime = currentTimeMillis() / 1000.0;
+        double DeltaTime = CurrTime - LastRecTime;
+        LastRecTime = CurrTime;
 
-        telemetry.addData("outtake power set", gamepad1.right_trigger);
+        this.Robot.Update(DeltaTime);
+
+        // telemetry.addData("outtake power set", gamepad1.right_trigger);
         if (gamepad1.a) {
-            this.Robot.OutTakeSys.SetVelocity(gamepad1.right_trigger);
+            this.Robot.OutTakeSys.SetVelocity(OuttakeRPM / 6000.0);
+        } else {
+            this.Robot.OutTakeSys.SetVelocity(0);
         }
 
         if (gamepad1.b) {
@@ -187,27 +195,23 @@ public class TeleOp1 extends OpMode {
             this.Robot.DriveSys.setLimelightTx(0);
         }
 
-//        if (gamepad1.a && result != null && result.isValid()) {
-//
-//            // Finds the distance between the camera and the currently targeted apriltag. Method is explained in detail at https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-estimating-distance
-//            double targetOffsetAngle_Vertical = result.getTy();
-//
-//            double limelightMountAngle = 21.0; // Camera is 21 degrees back from vertical
-//
-//            double limelightLensHeight = 12.6; // Lens height from the floor in inches
-//
-//            double targetHeight = 33.0; // Height of target. 33.O IS THE CORRECT VALUE FOR THE WOODEN DOWEL MODEL!!! CHANGE BEFORE COMPETITION!!!
-//
-//            double angleToGoal =  Math.toRadians(limelightMountAngle + targetOffsetAngle_Vertical);
-//
-//            double targetDistance = (targetHeight - limelightLensHeight)/Math.tan(angleToGoal);
-//
-//            telemetry.addData("Target Distance",targetDistance);
-//
-//            this.Robot.OutTakeSys.SetVelocity(((targetDistance*6)+1800)*24/60);
-//        } else {
-//            this.Robot.OutTakeSys.Stop();
-//        }
+        if (result != null && result.isValid()) {
+
+            // Finds the distance between the camera and the currently targeted apriltag. Method is explained in detail at https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-estimating-distance
+            double targetOffsetAngle_Vertical = result.getTy();
+
+            double limelightMountAngle = 21.0; // Camera is 21 degrees back from vertical
+
+            double limelightLensHeight = 12.6; // Lens height from the floor in inches
+
+            double targetHeight = 33.0; // Height of target. 33.O IS THE CORRECT VALUE FOR THE WOODEN DOWEL MODEL!!! CHANGE BEFORE COMPETITION!!!
+
+            double angleToGoal =  Math.toRadians(limelightMountAngle + targetOffsetAngle_Vertical);
+
+            double targetDistance = (targetHeight - limelightLensHeight)/Math.tan(angleToGoal);
+
+            telemetry.addData("Target Distance",targetDistance);
+        }
 
 
 
@@ -221,7 +225,6 @@ public class TeleOp1 extends OpMode {
         telemetry.addData("Ball Detected: ", BallDetected);
 
 //        telemetry.addData("TargetRPM", Math.round(this.TargetRPM));
-        this.Robot.Update(DeltaTime);
 
         telemetry.update();
 

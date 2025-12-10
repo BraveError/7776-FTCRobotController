@@ -108,6 +108,7 @@ public class Drive {
 
         if (this.CurrentState == DriveState.E_STOP) {
             Stop();
+            return;
         }
 
         if (this.CurrentMode == DriveMode.CONTROLLER_DRIVEN) {
