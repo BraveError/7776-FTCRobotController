@@ -81,144 +81,110 @@ public class AutoTest2 extends LinearOpMode {
 
             waitForStart();
 
-//            Actions.runBlocking(new SequentialAction(
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 0))
-//                            .turnTo(90)
+//            Actions.runBlocking(
+//                new ParallelAction(
+//                    new UpdateAction(this.DecoderWheelController::Update),
+//                    new SequentialAction(
+//                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+//                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+//                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
+//                        drive.actionBuilder(beginPose)
+//                            .splineTo(new Vector2d(28, 0), 0)
 //                            .build(),
-//                    this.IntakeController.AutoStartIntaking(),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 23))
-//                            .turnTo(90)
+//                        new SleepAction(0.5),
+//                        new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
+//                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
+//                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+//                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+//                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+//                        new SleepAction(0.5),
+//                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+//                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
+//                        drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(28, 0), 0)))
+//                            .turn(Math.PI / 2)
+//                            .lineToY(24)
 //                            .build(),
-//                    new SleepAction(0.5),
-//                    this.DecoderWheelController.AutoRevolveRight(),
-//                    new SleepAction(0.5),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 28))
-//                            .turnTo(90)
+//                        new SleepAction(0.5),
+//                        new InstantAction(() -> this.IntakeController.SetPower(0)),
+//                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+//                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
+//                        drive.actionBuilder(beginPose)
+//                            .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
 //                            .build(),
-//                    new SleepAction(0.5),
-//                    this.DecoderWheelController.AutoRevolveRight(),
-//                    new SleepAction(0.5),
-//                    drive.actionBuilder(beginPose)
-//                            .strafeTo(new Vector2d(27.5, 33))
-//                            .turnTo(90)
-//                            .build(),
-//                    this.IntakeController.AutoStopIntaking()
-//            ));
+//                        new InstantAction(() -> this.OutTakeController.SetVelocity(2000)),
+//                        new InstantAction(() -> this.IntakeController.SetPower(0)),
+//                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+//                        new SleepAction(4),
+//                        new InstantAction(() -> this.OutTakeController.ServosUp()),
+//                        new SleepAction(0.2),
+//                        new InstantAction(() -> this.OutTakeController.ServosDown()),
+//                        new SleepAction(0.2),
+//                        new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
+//                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+//                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+//                        new SleepAction(0.6),
+//                        new InstantAction(() -> this.IntakeController.SetPower(0)),
+//                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
+//                        new InstantAction(() -> this.OutTakeController.ServosUp()),
+//                        new SleepAction(0.2),
+//                        new InstantAction(() -> this.OutTakeController.ServosDown()),
+//                        new InstantAction(() -> this.OutTakeController.SetVelocity(0))
+//                    )
+//                )
+//            );
 
             Actions.runBlocking(
                 new ParallelAction(
                     new UpdateAction(this.DecoderWheelController::Update),
                     new SequentialAction(
-                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
-                        new InstantAction(() -> this.IntakeController.SetPower(1)),
-                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
                         drive.actionBuilder(beginPose)
-                            .splineTo(new Vector2d(28, 0), 0)
-                            .build(),
-                        new SleepAction(0.5),
-                        new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
-                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
-                        new InstantAction(() -> this.IntakeController.SetPower(1)),
-                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
-                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
-                        new SleepAction(0.5),
-                        new InstantAction(() -> this.IntakeController.SetPower(1)),
-                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
-                        drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(28, 0), 0)))
+                            .strafeTo(new Vector2d(28, 0))
                             .turn(Math.PI / 2)
-                            .lineToY(24)
                             .build(),
-                        new SleepAction(0.5),
-                        new InstantAction(() -> this.IntakeController.SetPower(0)),
+
+                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
+                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+
+                        drive.actionBuilder(drive.localizer.getPose())
+                            .strafeTo(new Vector2d(0, 24))
+                            .build(),
+
+                        new SleepAction(0.1),
                         new InstantAction(() -> this.IntakeController.ServosToNeutral()),
                         new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
-                        drive.actionBuilder(beginPose)
-                            .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
-                            .build(),
-                        new InstantAction(() -> this.OutTakeController.SetVelocity(2000)),
-                        new InstantAction(() -> this.IntakeController.SetPower(0)),
-                        new InstantAction(() -> this.IntakeController.ServosToNeutral()),
-                        new SleepAction(4),
-                        new InstantAction(() -> this.OutTakeController.ServosUp()),
-                        new SleepAction(0.2),
-                        new InstantAction(() -> this.OutTakeController.ServosDown()),
-                        new SleepAction(0.2),
                         new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
-                        new InstantAction(() -> this.IntakeController.SetPower(1)),
+                        new SleepAction(0.5),
+                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
+                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+
+                        drive.actionBuilder(drive.localizer.getPose())
+                            .strafeTo(new Vector2d(0, 4))
+                            .build(),
+
+                        new SleepAction(0.1),
                         new InstantAction(() -> this.IntakeController.ServosToNeutral()),
-                        new SleepAction(0.6),
-                        new InstantAction(() -> this.IntakeController.SetPower(0)),
+                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
+                        new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
+                        new SleepAction(0.5),
+                        new InstantAction(() -> this.IntakeController.ServosToIntake()),
+                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOn()),
+
+                        drive.actionBuilder(drive.localizer.getPose())
+                            .strafeTo(new Vector2d(0, 5))
+                            .build(),
+
+                        new SleepAction(0.1),
                         new InstantAction(() -> this.IntakeController.ServosToNeutral()),
-                        new InstantAction(() -> this.OutTakeController.ServosUp()),
-                        new SleepAction(0.2),
-                        new InstantAction(() -> this.OutTakeController.ServosDown()),
-                        new InstantAction(() -> this.OutTakeController.SetVelocity(0))
+                        new InstantAction(() -> this.DecoderWheelController.IntakeModeOff()),
+                        new InstantAction(() -> this.DecoderWheelController.RevolveLeft()),
+                        new SleepAction(0.5),
+                        new InstantAction(() -> this.IntakeController.SetPower(0))
                     )
                 )
             );
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//            Actions.runBlocking(new ParallelAction(
-//                    this.DecoderWheelController.AutoStartUpdateLoop(),
-//                    new SequentialAction(
-//                            this.DecoderWheelController.AutoIntakeModeOn(),
-//                            this.IntakeController.AutoStartIntaking(),
-//                            drive.actionBuilder(beginPose)
-//                                    .splineTo(new Vector2d(28, 0), 0)
-//                                    .build(),
-//                            new SleepAction(0.5),
-//                            this.DecoderWheelController.AutoRevolveLeft(),
-//                            this.DecoderWheelController.AutoIntakeModeOff(),
-//                            this.IntakeController.AutoStartIntakingForRevolve(),
-//                            this.DecoderWheelController.AutoIntakeModeOn(),
-//                            new SleepAction(0.5),
-//                            this.IntakeController.AutoStartIntaking(),
-//                            drive.actionBuilder(beginPose.plus(new Twist2d(new Vector2d(28, 0), 0)))
-//                                    .turn(Math.PI / 2)
-//                                    .lineToY(24)
-//                                    .build(),
-//                            new SleepAction(0.5),
-//                            this.IntakeController.AutoStopIntaking(),
-//                            this.DecoderWheelController.AutoIntakeModeOff(),
-//                            drive.actionBuilder(beginPose)
-//                                    .splineToSplineHeading(new Pose2d(0.1, 0.1, 0), 0)
-//                                    .build(),
-//                            this.OutTakeController.AutoSpinUp(),
-//                            this.IntakeController.AutoStopIntaking(),
-//                            new SleepAction(4),
-//                            this.OutTakeController.AutoServosUp(),
-//                            new SleepAction(0.2),
-//                            this.OutTakeController.AutoServosDown(),
-//                            new SleepAction(0.2),
-//                            this.DecoderWheelController.AutoRevolveLeft(),
-//                            this.IntakeController.AutoStartIntakingForRevolve(),
-//                            new SleepAction(0.6),
-//                            this.IntakeController.AutoStopIntaking(),
-//                            this.OutTakeController.AutoServosUp(),
-//                            new SleepAction(0.2),
-//                            this.OutTakeController.AutoServosDown(),
-//                            this.OutTakeController.AutoSpinDown()
-//                    )));
         } else {
             throw new RuntimeException();
         }
