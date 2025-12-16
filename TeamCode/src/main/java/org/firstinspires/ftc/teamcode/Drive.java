@@ -142,14 +142,16 @@ public class Drive {
                 turnAmount = 0.025 * limelightTx;
             }
 
+            //Check if we are currently intaking and there is an object in front of one (not both) of the sensors.
+            //Note the rev color/distance sensor v2 returns NaN when there is no object in fron of it, the v3 and other distance sensors behave very differently
             else if (this.BallTargetMode &&
-                    !Double.isNaN(LeftDistance)
+                    !Double.isNaN(LeftDistance) && Double.isNaN(RightDistance)
             ) {
                 turnAmount = -0.3;
             }
 
             else if (this.BallTargetMode &&
-                    !Double.isNaN(RightDistance)
+                    !Double.isNaN(RightDistance) && Double.isNaN(LeftDistance)
             ) {
                 turnAmount = 0.3;
             }

@@ -29,6 +29,7 @@ public class TeleOp1 extends OpMode {
     public double OuttakeRPMMultLow = 1;
     public double OuttakeRPMMultHigh = 1;
 
+    //Distance measurements of the left and right intake sensors. Probably there's a better way to do this but I don't know how -Rowan
     public static double LeftDistance;
     public static double RightDistance;
 
@@ -78,6 +79,8 @@ public class TeleOp1 extends OpMode {
         this.Robot.Update(DeltaTime);
         this.DriveSys.Update(DeltaTime);
 
+        //Update the distance variables once per loop
+        //Data comes from RobotAbstractor.java and is immediately passed through to Drive.java :| (this is not fantastic)
         LeftDistance = this.Robot.LeftDistanceSensor.getDistance(DistanceUnit.CM);
         RightDistance = this.Robot.RightDistanceSensor.getDistance(DistanceUnit.CM);
 
