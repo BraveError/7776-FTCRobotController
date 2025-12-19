@@ -192,7 +192,8 @@ public class Drive {
                 turnAmount = Gamepad1.right_stick_x * Gamepad1.right_stick_x * Math.signum(Gamepad1.right_stick_x) * RotSpeedMult;
                 TargetRot = Double.NaN;
             } else if (!Double.isNaN(TargetRot)) {
-                turnAmount = (CurrentRot - TargetRot) * MaintainRotP;
+                double TurnGoal = (CurrentRot - TargetRot + Math.PI) % (Math.PI * 2) - Math.PI;
+                turnAmount = TurnGoal * MaintainRotP;
             }
 
             MoveInGlobalDirectionAndTurn(DriveDirection.GetNormal(), DriveDirection.GetMagnitude(), turnAmount, 1);
